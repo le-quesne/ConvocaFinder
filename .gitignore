@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.env
+node_modules/
+frontend/.next/
+backend/.pytest_cache/
+backend/.coverage
+backend/coverage.xml
+backend/test.db
+playwright-report/
