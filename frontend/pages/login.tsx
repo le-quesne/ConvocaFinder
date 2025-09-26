@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Heading, Stack, Input, Button, useToast } from '@chakra-ui/react';
+import { Heading, Stack, Input, Button, useToast, Text, Link as ChakraLink } from '@chakra-ui/react';
+import NextLink from 'next/link';
 import api from '../lib/api';
 
 const LoginPage = () => {
@@ -26,6 +27,12 @@ const LoginPage = () => {
       <Input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
       <Input placeholder="Contraseña" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
       <Button onClick={handleLogin}>Ingresar</Button>
+      <Text textAlign="center">
+        ¿No tienes cuenta?{' '}
+        <ChakraLink as={NextLink} href="/register" color="teal.500">
+          Regístrate
+        </ChakraLink>
+      </Text>
     </Stack>
   );
 };
