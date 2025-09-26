@@ -1,0 +1,253 @@
+openapi: 3.0.3
+info:
+  title: ConvocaFinder API
+  version: 1.0.0
+  description: API REST para gestionar convocatorias normalizadas y alertas.
+servers:
+  - url: http://localhost:8000
+paths:
+  /auth/register:
+    post:
+      summary: Registrar usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+      responses:
+        '201':
+          description: Usuario creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRead'
+  /auth/login:
+    post:
+      summary: Iniciar sesión
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Token JWT
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+  /convocatorias:
+    get:
+      summary: Listar convocatorias
+      parameters:
+        - in: query
+          name: country
+          schema:
+            type: string
+        - in: query
+          name: funding_type
+          schema:
+            type: string
+        - in: query
+          name: amount_min
+          schema:
+            type: number
+        - in: query
+          name: amount_max
+          schema:
+            type: number
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: size
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista paginada de convocatorias
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCalls'
+  /convocatorias/{id}:
+    get:
+      summary: Obtener convocatoria
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Convocatoria
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CallRead'
+        '404':
+          description: No encontrado
+  /alerts:
+    post:
+      summary: Crear alerta
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlertCreate'
+      responses:
+        '200':
+          description: Alerta creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertRead'
+  /sources:
+    get:
+      summary: Listar fuentes
+      responses:
+        '200':
+          description: Fuentes configuradas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SourceRead'
+    post:
+      summary: Crear fuente
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SourceBase'
+      responses:
+        '200':
+          description: Fuente creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceRead'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Token:
+      type: object
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+    UserCreate:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    UserRead:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        is_active:
+          type: boolean
+        is_admin:
+          type: boolean
+    CallRead:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        organizer:
+          type: string
+        country:
+          type: string
+        deadline:
+          type: string
+          format: date
+        funding_type:
+          type: string
+    PaginatedCalls:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/CallRead'
+        pagination:
+          type: object
+          properties:
+            total:
+              type: integer
+            page:
+              type: integer
+            size:
+              type: integer
+    AlertCreate:
+      type: object
+      properties:
+        filters:
+          type: object
+        channel:
+          type: string
+    AlertRead:
+      allOf:
+        - $ref: '#/components/schemas/AlertCreate'
+        - type: object
+          properties:
+            id:
+              type: integer
+            is_active:
+              type: boolean
+    SourceBase:
+      type: object
+      required: [name, url, type, access_method, frequency_hours]
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+          format: uri
+        type:
+          type: string
+        access_method:
+          type: string
+        frequency_hours:
+          type: integer
+        is_active:
+          type: boolean
+    SourceRead:
+      allOf:
+        - $ref: '#/components/schemas/SourceBase'
+        - type: object
+          properties:
+            id:
+              type: integer
