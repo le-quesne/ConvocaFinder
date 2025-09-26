@@ -120,6 +120,34 @@ def record_scrape_log(
     return log
 
 
+def get_latest_scrape_logs(db: Session) -> List[dict]:
+    subquery = (
+        select(
+            models.ScrapeLog.source_id.label("source_id"),
+            func.max(models.ScrapeLog.started_at).label("last_started_at"),
+        )
+        .group_by(models.ScrapeLog.source_id)
+        .subquery()
+    )
+
+    stmt = (
+        select(models.Source, models.ScrapeLog)
+        .join(subquery, models.Source.id == subquery.c.source_id, isouter=True)
+        .join(
+            models.ScrapeLog,
+            (models.ScrapeLog.source_id == subquery.c.source_id)
+            & (models.ScrapeLog.started_at == subquery.c.last_started_at),
+            isouter=True,
+        )
+        .order_by(models.Source.name)
+    )
+
+    return [
+        {"source": source, "log": log}
+        for source, log in db.execute(stmt).all()
+    ]
+
+
 def add_favorite(db: Session, user: models.User, call: models.Call) -> models.Favorite:
     favorite = models.Favorite(user=user, call=call)
     db.add(favorite)

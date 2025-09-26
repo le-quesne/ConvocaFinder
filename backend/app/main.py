@@ -8,7 +8,7 @@ from prometheus_client import Counter, generate_latest, CONTENT_TYPE_LATEST
 from fastapi import APIRouter
 
 from .core.config import get_settings
-from .api import auth, calls, alerts, sources, metrics
+from .api import auth, calls, alerts, sources, metrics, scrape_logs
 from .core.rate_limiter import rate_limit
 
 settings = get_settings()
@@ -55,6 +55,7 @@ api_router.include_router(calls.router)
 api_router.include_router(alerts.router)
 api_router.include_router(sources.router)
 api_router.include_router(metrics.router)
+api_router.include_router(scrape_logs.router)
 
 app.include_router(api_router)
 
