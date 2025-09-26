@@ -3,9 +3,10 @@ import { Box, Heading, Text, Badge, Button, Stack } from '@chakra-ui/react';
 interface Props {
   call: any;
   onFavorite?: (id: number) => void;
+  canFavorite?: boolean;
 }
 
-const CallCard = ({ call, onFavorite }: Props) => (
+const CallCard = ({ call, onFavorite, canFavorite = true }: Props) => (
   <Box borderWidth="1px" borderRadius="lg" p={4} mb={4}>
     <Stack direction="row" justify="space-between" align="start">
       <Heading size="md">{call.title}</Heading>
@@ -20,7 +21,11 @@ const CallCard = ({ call, onFavorite }: Props) => (
     </Stack>
     <Stack direction="row" spacing={2} mt={4}>
       <Button as="a" href={call.source_url} target="_blank" rel="noopener noreferrer">Ver fuente</Button>
-      {onFavorite && <Button onClick={() => onFavorite(call.id)}>Favorito</Button>}
+      {onFavorite && (
+        <Button onClick={() => onFavorite(call.id)} isDisabled={!canFavorite}>
+          Favorito
+        </Button>
+      )}
     </Stack>
   </Box>
 );
