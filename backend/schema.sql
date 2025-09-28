@@ -39,10 +39,11 @@ CREATE TABLE IF NOT EXISTS calls (
     requirements JSONB DEFAULT '[]'::jsonb NOT NULL,
     source_url VARCHAR(500) NOT NULL,
     tags JSONB DEFAULT '[]'::jsonb NOT NULL,
-    last_scraped_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    fingerprint_hash VARCHAR(255) NOT NULL UNIQUE,
+    last_scraped_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+    fingerprint_hash VARCHAR(255) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+    CONSTRAINT uq_calls_fingerprint UNIQUE (fingerprint_hash)
 );
 
 CREATE TABLE IF NOT EXISTS call_versions (
