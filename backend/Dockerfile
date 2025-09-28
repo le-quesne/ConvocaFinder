@@ -1,12 +1,16 @@
-FROM python:3.11-slim
+FROM mcr.microsoft.com/playwright/python:v1.41.1-jammy
 
 WORKDIR /app
 
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt && playwright install-deps && playwright install chromium
+# Cliente de Postgres para facilitar carga de schema/diagnóstico
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends postgresql-client \
+ && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-ENV PYTHONPATH=/app
-
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Ejecuta FastAPI con host público
+CMD ["uvicorn","app.main:app","--host","0.0.0.0","--port","8000"]
