@@ -6,7 +6,7 @@ Sistema SaaS para agregar, normalizar y notificar convocatorias y fondos para em
 - [Características](#características)
 - [Arquitectura](#arquitectura)
 - [Requisitos](#requisitos)
-- [Ejecución local](#ejecución-local)
+- [Quickstart (Docker)](#quickstart-docker)
 - [Scrapers y fuentes](#scrapers-y-fuentes)
 - [Notificaciones](#notificaciones)
 - [Pruebas](#pruebas)
@@ -31,38 +31,36 @@ Consulta `docs/architecture.md` para diagramas y decisiones clave.
 - Make (opcional) y bash.
 - Para Playwright en local es necesario ejecutar `npx playwright install` si se corre fuera de Docker.
 
-## Ejecución local
-```bash
-docker-compose up --build
-```
-Servicios:
-- Backend: http://localhost:8000
-- Frontend: http://localhost:3000
-- Mailhog (captura emails): http://localhost:8025
+## Quickstart (Docker)
 
-Inicializa la base de datos:
 ```bash
-docker-compose exec backend bash -c "psql postgresql://convoca:convoca@db:5432/convocafinder -f /app/schema.sql"
-./seed_sources.sh
-```
+cp .env.example .env
+docker compose build --no-cache
+docker compose up -d
+Backend: http://localhost:8000/docs
+Frontend: http://localhost:3000
+Mailhog: http://localhost:8025
+Inicializar base de datos
+# Crear DB (si no existe)
+docker compose exec -e PGPASSWORD=convoca db \
+  psql -U convoca -d postgres -c "CREATE DATABASE convocafinder OWNER convoca;"
 
-Ejecutar scrapers manualmente:
-```bash
-docker-compose exec backend python -c "from app.services.scraper_runner import run_all_scrapers; print(run_all_scrapers())"
-```
+# Cargar schema.sql
+docker compose exec backend bash -lc 'cat /app/schema.sql' \
+  | docker compose exec -T db bash -lc 'PGPASSWORD=convoca psql -U convoca -d convocafinder'
 
-Crear usuario admin:
-```bash
-docker-compose exec backend python - <<'PY'
-from app.core.database import SessionLocal
-from app.models import User
-from app.auth.security import get_password_hash
-
-db = SessionLocal()
-user = User(email="admin@convoca.com", hashed_password=get_password_hash("Admin123!"), is_admin=True)
-db.add(user)
-db.commit()
-PY
+# Ver tablas
+docker compose exec -T db bash -lc \
+  'PGPASSWORD=convoca psql -U convoca -d convocafinder -c "\dt"'
+Poblar datos / probar scrapers
+docker compose exec backend python -c \
+"from app.services.scraper_runner import run_all_scrapers; print(run_all_scrapers())"
+Troubleshooting común
+Playwright falla en build: usamos base mcr.microsoft.com/playwright/python:v1.41.1-jammy.
+Frontend no abre: ejecutar con -H 0.0.0.0 -p 3000 y exponer 3000:3000.
+next: not found: asegurarse de npm ci en build y volumen frontend_node_modules.
+CORS / Pydantic JSON: CORS_ORIGINS=["http://localhost:3000"] (JSON).
+DB "convoca" no existe: URL correcta .../convocafinder y crear DB si falta.
 ```
 
 ## Scrapers y fuentes
