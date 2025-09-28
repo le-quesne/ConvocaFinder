@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Heading, Stack, Input, Button, useToast } from '@chakra-ui/react';
-import api from '../lib/api';
+import { apiFetch } from '../lib/api';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -12,8 +12,16 @@ const LoginPage = () => {
       const formData = new URLSearchParams();
       formData.append('username', email);
       formData.append('password', password);
-      const response = await api.post('/auth/login', formData);
-      localStorage.setItem('token', response.data.access_token);
+      const data = await apiFetch<{ access_token: string }>('/auth/login', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      });
+      if (data?.access_token) {
+        localStorage.setItem('token', data.access_token);
+      }
       toast({ title: 'Inicio de sesión exitoso', status: 'success' });
     } catch (error) {
       toast({ title: 'Error al iniciar sesión', status: 'error' });

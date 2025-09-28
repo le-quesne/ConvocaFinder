@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Heading, Table, Thead, Tbody, Tr, Th, Td, Spinner, Stack, useToast } from '@chakra-ui/react';
-import api from '../lib/api';
+import { apiFetch } from '../lib/api';
 
 const AdminPage = () => {
   const [sources, setSources] = useState<any[]>([]);
@@ -10,8 +10,9 @@ const AdminPage = () => {
   const fetchSources = async () => {
     setLoading(true);
     try {
-      const response = await api.get('/sources');
-      setSources(response.data);
+      const result = await apiFetch<any>('/sources');
+      const items = Array.isArray(result) ? result : result?.data ?? [];
+      setSources(items);
     } catch (error) {
       toast({ title: 'Error cargando fuentes', status: 'error' });
     } finally {

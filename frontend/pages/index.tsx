@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Heading, SimpleGrid, Select, Stack, Spinner, useToast } from '@chakra-ui/react';
-import api from '../lib/api';
+import { apiFetch } from '../lib/api';
 import CallCard from '../components/CallCard';
 
 const HomePage = () => {
@@ -9,11 +9,19 @@ const HomePage = () => {
   const [country, setCountry] = useState<string>('');
   const toast = useToast();
 
-  const fetchCalls = async (filters: any = {}) => {
+  const fetchCalls = async (filters: Record<string, string> = {}) => {
     setLoading(true);
     try {
-      const response = await api.get('/convocatorias', { params: filters });
-      setCalls(response.data.data);
+      const searchParams = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) {
+          searchParams.set(key, value);
+        }
+      });
+      const query = searchParams.toString();
+      const result = await apiFetch<any>(`/convocatorias${query ? `?${query}` : ''}`);
+      const items = Array.isArray(result) ? result : result?.data ?? [];
+      setCalls(items);
     } catch (error) {
       toast({ title: 'Error cargando convocatorias', status: 'error' });
     } finally {
