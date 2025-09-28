@@ -1,7 +1,13 @@
 FROM node:20-alpine
+
 WORKDIR /app
-COPY package.json package-lock.json* yarn.lock* pnpm-lock.yaml* ./
-RUN npm install
+
+# Instala dependencias con caché
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# Copia el resto del código
 COPY . .
-RUN npm run build
-CMD ["npm", "start"]
+
+# El comando real lo definimos en docker-compose (para forzar 0.0.0.0)
+CMD ["npm","run","dev"]
