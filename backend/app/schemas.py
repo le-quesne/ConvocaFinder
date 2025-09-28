@@ -125,6 +125,11 @@ class ScrapeLogRead(ORMModel):
     error_message: Optional[str]
 
 
+class SourceScrapeLog(BaseModel):
+    source: SourceRead
+    log: Optional[ScrapeLogRead] = None
+
+
 class MetricsResponse(BaseModel):
     scrapes_success: int
     scrapes_failed: int
