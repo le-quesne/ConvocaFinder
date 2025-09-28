@@ -1,8 +1,10 @@
-__pycache__/
-*.pyc
+**/__pycache__/
+**/*.pyc
 .env
 node_modules/
-frontend/.next/
+.next/
+dist/
+build/
 backend/.pytest_cache/
 backend/.coverage
 backend/coverage.xml
